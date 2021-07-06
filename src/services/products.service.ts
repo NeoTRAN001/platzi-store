@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { throwError } from 'rxjs';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { throws } from 'assert';
 import { Product } from '../entities/product.entity';
 
 @Injectable()
@@ -21,7 +21,11 @@ export class ProductsService {
   }
 
   findOne(id: number) {
-    return this.products.find((item) => item.id === id);
+    const product = this.products.find((item) => item.id === id);
+
+    if (!product) throw new NotFoundException('Product Not Found');
+
+    return product;
   }
 
   create(payload: any) {
@@ -38,20 +42,20 @@ export class ProductsService {
   }
 
   update(id: number, payload: any) {
-    const found = this.products.findIndex((item) => item.id === id);
+    const index = this.products.findIndex((item) => item.id === id);
 
-    if (found !== -1) return throwError('Product not found');
+    if (index === -1) throw new NotFoundException('Product Not Found');
 
-    this.products[found] = { id, ...payload };
-    return this.products[found];
+    this.products[index] = { ...this.products[index], ...payload };
+    return this.products[index];
   }
 
   delete(id: number) {
-    const found = this.products.findIndex((item) => item.id === id);
+    const index = this.products.findIndex((item) => item.id === id);
 
-    if (found === -1) return throwError('Product not found');
+    if (index === -1) throw new NotFoundException('Product Not Found');
 
-    this.products.splice(found, 1);
+    this.products.splice(index, 1);
     return 'Product deleted';
   }
 }
